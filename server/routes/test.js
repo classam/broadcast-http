@@ -8,8 +8,8 @@ module.exports = ({app}) => {
 
     app.get('/test/headers', function (req, res) {
         if(req.header('X-BaconPancakes') != null){
+            res.set('X-BaconPancakes', "Makin' Bacon Pancakes");
             return res.send("Makin' Bacon Pancakes");
-
         }
         return res.status(400).send('NO BACON PANCAKES DETECTED');
     });

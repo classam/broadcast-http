@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Security;
@@ -16,7 +17,7 @@ namespace broadcast.Tests
         [Test]
         public async Task HelloWorld()
         {
-            var request = new HttpRequest(HttpRequest.GET, new Uri(Endpoint + "/test/hello"), null);
+            var request = new HttpRequest(HttpRequest.GET, new Uri(Endpoint + "/test/hello"));
             var response = await request.execute(new HttpClient());
             Assert.IsNotEmpty(response.body);
             Assert.AreEqual("Hello World!", response.body);
@@ -31,7 +32,7 @@ namespace broadcast.Tests
             // (so once we've applied cookies, they STAY applied)
             client.DefaultRequestHeaders.Add("X-BaconPancakes","BaconPancakes");
             
-            var request = new HttpRequest(HttpRequest.GET, new Uri(Endpoint + "/test/headers"), null);
+            var request = new HttpRequest(HttpRequest.GET, new Uri(Endpoint + "/test/headers"));
             var response = await request.execute(client);
             Assert.IsNotEmpty(response.body);
             Assert.AreEqual("Makin' Bacon Pancakes", response.body);
@@ -43,7 +44,7 @@ namespace broadcast.Tests
         {
             var client = new HttpClient();
             
-            var request = new HttpRequest(HttpRequest.GET, new Uri(Endpoint + "/test/serverError"), null);
+            var request = new HttpRequest(HttpRequest.GET, new Uri(Endpoint + "/test/serverError"));
             var response = await request.execute(client);
             Assert.AreEqual(HttpStatusCode.InternalServerError, response.code);
             return;
@@ -54,7 +55,7 @@ namespace broadcast.Tests
         {
             var client = new HttpClient();
             
-            var request = new HttpRequest(HttpRequest.GET, new Uri(Endpoint + "/test/clientError"), null);
+            var request = new HttpRequest(HttpRequest.GET, new Uri(Endpoint + "/test/clientError"));
             var response = await request.execute(client);
             Console.WriteLine(response);
             Assert.AreEqual(HttpStatusCode.BadRequest, response.code);
@@ -66,7 +67,7 @@ namespace broadcast.Tests
         {
             var client = new HttpClient();
             
-            var request = new HttpRequest(HttpRequest.GET, new Uri(Endpoint + "/test/forbidden"), null);
+            var request = new HttpRequest(HttpRequest.GET, new Uri(Endpoint + "/test/forbidden"));
             var response = await request.execute(client);
             Assert.AreEqual(HttpStatusCode.Forbidden, response.code);
             return;
@@ -77,7 +78,7 @@ namespace broadcast.Tests
         {
             var client = new HttpClient();
             
-            var request = new HttpRequest(HttpRequest.GET, new Uri(Endpoint + "/test/notFound"), null);
+            var request = new HttpRequest(HttpRequest.GET, new Uri(Endpoint + "/test/notFound"));
             var response = await request.execute(client);
             Assert.AreEqual(HttpStatusCode.NotFound, response.code);
             return;
@@ -89,7 +90,7 @@ namespace broadcast.Tests
             var client = new HttpClient();
             client.Timeout = TimeSpan.FromSeconds(1);
             
-            var request = new HttpRequest(HttpRequest.GET, new Uri(Endpoint + "/test/timeout"), null);
+            var request = new HttpRequest(HttpRequest.GET, new Uri(Endpoint + "/test/timeout"));
             var response = await request.execute(client);
             Assert.AreEqual(HttpStatusCode.RequestTimeout, response.code);
             return;
@@ -101,7 +102,7 @@ namespace broadcast.Tests
             var client = new HttpClient();
             client.Timeout = TimeSpan.FromSeconds(1);
             
-            var request = new HttpRequest(HttpRequest.GET, new Uri("https://sassages.missing/where"), null);
+            var request = new HttpRequest(HttpRequest.GET, new Uri("https://sassages.missing/where"));
             Assert.ThrowsAsync<HttpRequestException>(async () =>
             {
                 var response = await request.execute(client);
@@ -137,7 +138,7 @@ namespace broadcast.Tests
         {
             var client = new HttpClient();
             
-            var request = new HttpRequest(HttpRequest.DELETE, new Uri(Endpoint + "/test/delete"), "");
+            var request = new HttpRequest(HttpRequest.DELETE, new Uri(Endpoint + "/test/delete"));
             var response = await request.execute(client);
             
             Assert.AreEqual(HttpStatusCode.OK, response.code);
@@ -157,6 +158,25 @@ namespace broadcast.Tests
         }
         
         [Test] 
+        public async Task Head()
+        {
+            var client = new HttpClient();
+            
+            client.DefaultRequestHeaders.Add("X-BaconPancakes","BaconPancakes");
+            
+            var request = new HttpRequest(HttpRequest.HEAD, new Uri(Endpoint + "/test/headers"));
+            
+            var response = await request.execute(client);
+            
+            Assert.AreEqual(HttpStatusCode.OK, response.code);
+            Console.WriteLine((response.response.Headers.ToString()));
+            Assert.IsTrue(response.response.Headers.Contains("ETag"));
+            Assert.IsTrue(response.response.Headers.Contains("X-Powered-By"));
+            Assert.IsTrue(response.response.Headers.Contains("X-BaconPancakes"));
+            // TODO: get value of X-BaconPancakes
+        }
+        
+        [Test] 
         public async Task GetThreaded()
         {
             var http = new Http.Http(new Uri(Endpoint));
@@ -171,7 +191,7 @@ namespace broadcast.Tests
             });
 
             http.TestWait(5000);
-            Assert.AreEqual(true, thisHappened);
+            Assert.IsTrue(thisHappened);
         }
         
         [Test] 
@@ -189,7 +209,7 @@ namespace broadcast.Tests
             });
 
             http.TestWait(5000);
-            Assert.AreEqual(true, thisHappened);
+            Assert.IsTrue(thisHappened);
         }
         
         [Test] 
@@ -207,7 +227,7 @@ namespace broadcast.Tests
             });
 
             http.TestWait(5000);
-            Assert.AreEqual(true, thisHappened);
+            Assert.IsTrue(thisHappened);
         }
         
         [Test] 
@@ -225,7 +245,7 @@ namespace broadcast.Tests
             });
 
             http.TestWait(5000);
-            Assert.AreEqual(true, thisHappened);
+            Assert.IsTrue(thisHappened);
         }
         
         [Test] 
@@ -243,7 +263,31 @@ namespace broadcast.Tests
             });
 
             http.TestWait(5000);
-            Assert.AreEqual(true, thisHappened);
+            Assert.IsTrue(thisHappened);
+        }
+        
+        [Test] 
+        public async Task BasicAuth()
+        {
+            // TODO
+        }
+        
+        [Test] 
+        public async Task FollowRedirects()
+        {
+            // TODO
+        }
+        
+        [Test] 
+        public async Task ReceiveGzipped()
+        {
+            // TODO
+        }
+        
+        [Test] 
+        public async Task SendGzipped()
+        {
+            // TODO
         }
     }
 }

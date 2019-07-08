@@ -27,6 +27,14 @@ namespace broadcast.Http
         public string data { get; private set; }
 
         private HttpRequestMessage rawMessage;
+        
+        public HttpRequest(string type, Uri endpoint)
+        {
+            this.id = Guid.NewGuid();
+            this.type = type;
+            this.endpoint = endpoint;
+            this.data = "";
+        }
 
         public HttpRequest(string type, Uri endpoint, string data)
         {
