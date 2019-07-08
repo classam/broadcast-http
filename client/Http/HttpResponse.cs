@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 
@@ -12,6 +14,8 @@ namespace broadcast.Http
         public string body { get; private set; }
         public HttpStatusCode code { get; private set; }
         
+        public Dictionary<string, string> headers { get; private set; }
+        
 
         public bool ok => code.Equals(HttpStatusCode.OK);
 
@@ -21,6 +25,13 @@ namespace broadcast.Http
             this.response = response;
             this.body = body;
             this.code = code;
+            if (this.response != null)
+            {
+                headers = this.response.Headers
+                    .ToDictionary<KeyValuePair<string, IEnumerable<string>>, string, string>(
+                        (pair => pair.Key), (pair => string.Join("", pair.Value)));
+            }
+            
         }
 
         public override string ToString()

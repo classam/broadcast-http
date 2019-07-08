@@ -169,11 +169,10 @@ namespace broadcast.Tests
             var response = await request.execute(client);
             
             Assert.AreEqual(HttpStatusCode.OK, response.code);
-            Console.WriteLine((response.response.Headers.ToString()));
             Assert.IsTrue(response.response.Headers.Contains("ETag"));
             Assert.IsTrue(response.response.Headers.Contains("X-Powered-By"));
             Assert.IsTrue(response.response.Headers.Contains("X-BaconPancakes"));
-            // TODO: get value of X-BaconPancakes
+            Assert.AreEqual("Makin' Bacon Pancakes", response.headers["X-BaconPancakes"]);
         }
         
         [Test] 
