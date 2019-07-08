@@ -5,7 +5,6 @@ using System.Threading;
 using broadcast.Concurrency;
 using broadcast.Errors;
 using broadcast.Events;
-using Newtonsoft.Json.Serialization;
 
 namespace broadcast.Http
 {
@@ -110,6 +109,24 @@ namespace broadcast.Http
             _responseDictionary.Add(delete.id, responseDelegate);
 
             _httpPipeline.In(delete);
+        }
+        
+        public void Head(string path, Response responseDelegate)
+        {
+            var head = new HttpRequest(HttpRequest.HEAD, new Uri(Endpoint + path), "");
+            
+            _responseDictionary.Add(head.id, responseDelegate);
+            
+            _httpPipeline.In(head);
+        }
+        
+        public void Patch(string path, string data, Response responseDelegate)
+        {
+            var patch = new HttpRequest(HttpRequest.PATCH, new Uri(Endpoint + path), data);
+            
+            _responseDictionary.Add(patch.id, responseDelegate);
+            
+            _httpPipeline.In(patch);
         }
 
         private void Handle(string log)

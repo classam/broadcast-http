@@ -22,7 +22,7 @@ const main = async () => {
     // log every URL we hit, with timings
     app.use(responseTime((req, res, time) => {
         time = Math.ceil(time);
-        console.log(`${req.method} ${req.url} ${time}-ms`)
+        console.log(`${req.method} ${req.url} ${time}ms`)
     }));
 
     //

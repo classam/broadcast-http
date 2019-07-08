@@ -51,6 +51,13 @@ module.exports = ({app}) => {
         return res.status(200).send(response);
     });
 
+    app.patch(`/test/echo`, function(req, res){
+        let response = JSON.stringify(req.body);
+        console.warn(response);
+        res.header("Content-Type", "application/json");
+        return res.status(200).send(response);
+    });
+
     app.delete('/test/delete', function(req, res){
         return res.status(200).send("OK");
     });

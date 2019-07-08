@@ -19,7 +19,7 @@ namespace broadcast.Tests
             var request = new HttpRequest(HttpRequest.GET, new Uri(Endpoint + "/test/hello"), null);
             var response = await request.execute(new HttpClient());
             Assert.IsNotEmpty(response.body);
-            Assert.AreEqual(response.body, "Hello World!");
+            Assert.AreEqual("Hello World!", response.body);
             return;
         }
          
@@ -34,7 +34,7 @@ namespace broadcast.Tests
             var request = new HttpRequest(HttpRequest.GET, new Uri(Endpoint + "/test/headers"), null);
             var response = await request.execute(client);
             Assert.IsNotEmpty(response.body);
-            Assert.AreEqual(response.body, "Makin' Bacon Pancakes");
+            Assert.AreEqual("Makin' Bacon Pancakes", response.body);
             return;
         }
         
@@ -45,7 +45,7 @@ namespace broadcast.Tests
             
             var request = new HttpRequest(HttpRequest.GET, new Uri(Endpoint + "/test/serverError"), null);
             var response = await request.execute(client);
-            Assert.AreEqual(response.code, 500);
+            Assert.AreEqual(HttpStatusCode.InternalServerError, response.code);
             return;
         }
         
@@ -56,7 +56,8 @@ namespace broadcast.Tests
             
             var request = new HttpRequest(HttpRequest.GET, new Uri(Endpoint + "/test/clientError"), null);
             var response = await request.execute(client);
-            Assert.AreEqual(response.code, 400);
+            Console.WriteLine(response);
+            Assert.AreEqual(HttpStatusCode.BadRequest, response.code);
             return;
         }
         
@@ -67,7 +68,7 @@ namespace broadcast.Tests
             
             var request = new HttpRequest(HttpRequest.GET, new Uri(Endpoint + "/test/forbidden"), null);
             var response = await request.execute(client);
-            Assert.AreEqual(response.code, 403);
+            Assert.AreEqual(HttpStatusCode.Forbidden, response.code);
             return;
         }
         
@@ -78,7 +79,7 @@ namespace broadcast.Tests
             
             var request = new HttpRequest(HttpRequest.GET, new Uri(Endpoint + "/test/notFound"), null);
             var response = await request.execute(client);
-            Assert.AreEqual(response.code, 404);
+            Assert.AreEqual(HttpStatusCode.NotFound, response.code);
             return;
         }
         
@@ -90,7 +91,7 @@ namespace broadcast.Tests
             
             var request = new HttpRequest(HttpRequest.GET, new Uri(Endpoint + "/test/timeout"), null);
             var response = await request.execute(client);
-            Assert.AreEqual(response.code, 504);
+            Assert.AreEqual(HttpStatusCode.RequestTimeout, response.code);
             return;
         }
         
@@ -115,7 +116,7 @@ namespace broadcast.Tests
             var request = new HttpRequest(HttpRequest.POST, new Uri(Endpoint + "/test/echo"), "{\"hello\":\"there\"}");
             var response = await request.execute(client);
             
-            Assert.AreEqual(200, response.code);
+            Assert.AreEqual(HttpStatusCode.OK, response.code);
             Assert.AreEqual("{\"hello\":\"there\"}", response.body);
         }
         
@@ -127,7 +128,7 @@ namespace broadcast.Tests
             var request = new HttpRequest(HttpRequest.PUT, new Uri(Endpoint + "/test/echo"), "{\"hello\":\"there\"}");
             var response = await request.execute(client);
             
-            Assert.AreEqual(200, response.code);
+            Assert.AreEqual(HttpStatusCode.OK, response.code);
             Assert.AreEqual("{\"hello\":\"there\"}", response.body);
         }
         
@@ -139,8 +140,20 @@ namespace broadcast.Tests
             var request = new HttpRequest(HttpRequest.DELETE, new Uri(Endpoint + "/test/delete"), "");
             var response = await request.execute(client);
             
-            Assert.AreEqual(200, response.code);
+            Assert.AreEqual(HttpStatusCode.OK, response.code);
             Assert.AreEqual("OK", response.body);
+        }
+        
+        [Test] 
+        public async Task Patch()
+        {
+            var client = new HttpClient();
+            
+            var request = new HttpRequest(HttpRequest.PATCH, new Uri(Endpoint + "/test/echo"), "{\"hello\":\"there\"}");
+            var response = await request.execute(client);
+            
+            Assert.AreEqual(HttpStatusCode.OK, response.code);
+            Assert.AreEqual("{\"hello\":\"there\"}", response.body);
         }
         
         [Test] 
@@ -152,7 +165,7 @@ namespace broadcast.Tests
 
             http.Get("test/hello", (response) =>
             {
-                Assert.AreEqual(200, response.code);
+                Assert.AreEqual(HttpStatusCode.OK, response.code);
                 Assert.AreEqual("Hello World!", response.body);
                 thisHappened = true;
             });
@@ -170,7 +183,7 @@ namespace broadcast.Tests
 
             http.Put("test/echo", "{\"hello\": \"world\"}", (response) =>
             {
-                Assert.AreEqual(200, response.code);
+                Assert.AreEqual(HttpStatusCode.OK, response.code);
                 Assert.AreEqual("{\"hello\":\"world\"}", response.body);
                 thisHappened = true;
             });
@@ -188,7 +201,25 @@ namespace broadcast.Tests
 
             http.Post("test/echo", "{\"hello\": \"world\"}", (response) =>
             {
-                Assert.AreEqual(200, response.code);
+                Assert.AreEqual(HttpStatusCode.OK, response.code);
+                Assert.AreEqual("{\"hello\":\"world\"}", response.body);
+                thisHappened = true;
+            });
+
+            http.TestWait(5000);
+            Assert.AreEqual(true, thisHappened);
+        }
+        
+        [Test] 
+        public async Task PatchThreaded()
+        {
+            var http = new Http.Http(new Uri(Endpoint));
+
+            var thisHappened = false;
+
+            http.Patch("test/echo", "{\"hello\": \"world\"}", (response) =>
+            {
+                Assert.AreEqual(HttpStatusCode.OK, response.code);
                 Assert.AreEqual("{\"hello\":\"world\"}", response.body);
                 thisHappened = true;
             });
@@ -206,7 +237,7 @@ namespace broadcast.Tests
 
             http.Delete("test/delete", (response) =>
             {
-                Assert.AreEqual(200, response.code);
+                Assert.AreEqual(HttpStatusCode.OK, response.code);
                 Assert.AreEqual("OK", response.body);
                 thisHappened = true;
             });
