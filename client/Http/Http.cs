@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Text;
 using System.Threading;
 using broadcast.Concurrency;
 using broadcast.Errors;
@@ -175,6 +176,12 @@ namespace broadcast.Http
                 Update();
                 counter += updateInterval;
             }
+        }
+
+        public static void AddBasicAuth(HttpClient client, string username, string password)
+        {
+            var byteArray = Encoding.ASCII.GetBytes(username + ":" + password);
+            client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Basic", Convert.ToBase64String(byteArray));
         }
 
     }

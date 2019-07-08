@@ -6,6 +6,7 @@ using System.Security;
 using System.Threading.Tasks;
 using broadcast.Http;
 using NUnit.Framework;
+using HttpClient = broadcast.Http.HttpClient;
 
 namespace broadcast.Tests
 {
@@ -57,7 +58,17 @@ namespace broadcast.Tests
             
             var request = new HttpRequest(HttpRequest.GET, new Uri(Endpoint + "/test/clientError"));
             var response = await request.execute(client);
-            Console.WriteLine(response);
+            Assert.AreEqual(HttpStatusCode.BadRequest, response.code);
+            return;
+        }
+        
+        [Test]
+        public async Task PostClientError()
+        {
+            var client = new HttpClient();
+            
+            var request = new HttpRequest(HttpRequest.POST, new Uri(Endpoint + "/test/clientError"), "{}");
+            var response = await request.execute(client);
             Assert.AreEqual(HttpStatusCode.BadRequest, response.code);
             return;
         }
@@ -268,11 +279,30 @@ namespace broadcast.Tests
         [Test] 
         public async Task BasicAuth()
         {
+            var client = new HttpClient();
+            var username = "admin";
+            var password = "hunter2";
+            Http.Http.AddBasicAuth(client, username, password);
+            var request = new HttpRequest(HttpRequest.GET, new Uri(Endpoint + "/test/auth/basic"));
+            var response = await request.execute(new HttpClient());
+            Assert.IsNotEmpty(response.body);
+            Assert.AreEqual("Hello World!", response.body);
+        }
+        
+        [Test] 
+        public async Task TokenAuth()
+        {
             // TODO
         }
         
         [Test] 
         public async Task FollowRedirects()
+        {
+            // TODO
+        }
+        
+        [Test] 
+        public async Task DontFollowRedirects()
         {
             // TODO
         }
