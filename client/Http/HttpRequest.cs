@@ -19,7 +19,7 @@ namespace broadcast.Http
         public static string DELETE = "DELETE";
         public static string PATCH = "PATCH";
         public static string HEAD = "HEAD";
-        
+
         public Guid id { get; private set; }
 
         public string type { get; private set; }
@@ -27,7 +27,7 @@ namespace broadcast.Http
         public string data { get; private set; }
 
         private HttpRequestMessage rawMessage;
-        
+
         public HttpRequest(string type, Uri endpoint)
         {
             this.id = Guid.NewGuid();
@@ -55,113 +55,48 @@ namespace broadcast.Http
 
         public async Task<HttpResponse> execute(HttpClient client)
         {
-            if (this.rawMessage != null)
+            try
             {
-                try{
+                if (this.rawMessage != null)
+                {
                     var responseBody = await client.SendAsync(this.rawMessage);
                     var responseString = await responseBody.Content.ReadAsStringAsync();
                     return new HttpResponse(this, responseBody, responseString, responseBody.StatusCode);
                 }
-                catch (HttpRequestException e)
-                {
-                    return HttpResponse.ErrorToResponse(this, e);
-                }
-                catch (System.Threading.Tasks.TaskCanceledException e)
-                {
-                    return new HttpResponse(this, null, "Response Timeout", HttpStatusCode.RequestTimeout);
-                }
-            }
-            else if (this.type == GET)
-            {
-                try
+                else if (this.type == GET)
                 {
                     var responseBody = await client.GetAsync(this.endpoint.ToString());
                     var responseString = await responseBody.Content.ReadAsStringAsync();
                     return new HttpResponse(this, responseBody, responseString, responseBody.StatusCode);
                 }
-                catch (HttpRequestException e)
-                {
-                    return HttpResponse.ErrorToResponse(this, e);
-                }
-                catch (System.Threading.Tasks.TaskCanceledException e)
-                {
-                    return new HttpResponse(this, null, "Response Timeout", HttpStatusCode.RequestTimeout);
-                }
-            }
-            else if (this.type == POST)
-            {
-                try
+                else if (this.type == POST)
                 {
                     var content = new StringContent(data, Encoding.UTF8, "application/json");
                     var responseBody = await client.PostAsync(this.endpoint.ToString(), content);
                     var responseString = await responseBody.Content.ReadAsStringAsync();
                     return new HttpResponse(this, responseBody, responseString, responseBody.StatusCode);
                 }
-                catch (HttpRequestException e)
-                {
-                    return HttpResponse.ErrorToResponse(this, e);
-                }
-                catch (System.Threading.Tasks.TaskCanceledException e)
-                {
-                    return new HttpResponse(this, null, "Response Timeout", HttpStatusCode.RequestTimeout);
-                }
-            }
-            else if (this.type == PUT)
-            {
-                try
+                else if (this.type == PUT)
                 {
                     var content = new StringContent(data, Encoding.UTF8, "application/json");
                     var responseBody = await client.PutAsync(this.endpoint.ToString(), content);
                     var responseString = await responseBody.Content.ReadAsStringAsync();
                     return new HttpResponse(this, responseBody, responseString, responseBody.StatusCode);
                 }
-                catch (HttpRequestException e)
-                {
-                    return HttpResponse.ErrorToResponse(this, e);
-                }
-                catch (System.Threading.Tasks.TaskCanceledException e)
-                {
-                    return new HttpResponse(this, null, "Response Timeout", HttpStatusCode.RequestTimeout);
-                }
-            }
-            else if (this.type == DELETE)
-            {
-                try
+                else if (this.type == DELETE)
                 {
                     var responseBody = await client.DeleteAsync(this.endpoint.ToString());
                     var responseString = await responseBody.Content.ReadAsStringAsync();
                     return new HttpResponse(this, responseBody, responseString, responseBody.StatusCode);
                 }
-                catch (HttpRequestException e)
-                {
-                    return HttpResponse.ErrorToResponse(this, e);
-                }
-                catch (System.Threading.Tasks.TaskCanceledException e)
-                {
-                    return new HttpResponse(this, null, "Response Timeout", HttpStatusCode.RequestTimeout);
-                }
-            }
-            else if (this.type == HEAD)
-            {
-                try
+                else if (this.type == HEAD)
                 {
                     var request = new HttpRequestMessage(new HttpMethod("HEAD"), this.endpoint);
                     var responseBody = await client.SendAsync(request);
                     var responseString = await responseBody.Content.ReadAsStringAsync();
                     return new HttpResponse(this, responseBody, responseString, responseBody.StatusCode);
                 }
-                catch (HttpRequestException e)
-                {
-                    return HttpResponse.ErrorToResponse(this, e);
-                }
-                catch (System.Threading.Tasks.TaskCanceledException e)
-                {
-                    return new HttpResponse(this, null, "Response Timeout", HttpStatusCode.RequestTimeout);
-                }
-            }
-            else if (this.type == PATCH)
-            {
-                try
+                else if (this.type == PATCH)
                 {
                     var content = new StringContent(data, Encoding.UTF8, "application/json");
                     var request = new HttpRequestMessage(new HttpMethod("PATCH"), endpoint);
@@ -170,20 +105,21 @@ namespace broadcast.Http
                     var responseString = await responseBody.Content.ReadAsStringAsync();
                     return new HttpResponse(this, responseBody, responseString, responseBody.StatusCode);
                 }
-                catch (HttpRequestException e)
+                else
                 {
-                    return HttpResponse.ErrorToResponse(this, e);
-                }
-                catch (System.Threading.Tasks.TaskCanceledException e)
-                {
-                    return new HttpResponse(this, null, "Response Timeout", HttpStatusCode.RequestTimeout);
+                    throw new BroadcastError(
+                        this.type +
+                        " is not GET, PUT, POST, PATCH, HEAD, or DELETE, which are the only HTTP verbs we actually handle");
                 }
             }
-            else
+            catch (HttpRequestException e)
             {
-                throw new BroadcastError(this.type + " is not GET, PUT, POST, PATCH, HEAD, or DELETE, which are the only HTTP verbs we actually handle");
+                return HttpResponse.ErrorToResponse(this, e);
+            }
+            catch (System.Threading.Tasks.TaskCanceledException e)
+            {
+                return new HttpResponse(this, null, "Response Timeout", HttpStatusCode.RequestTimeout);
             }
         }
-        
     }
 }
