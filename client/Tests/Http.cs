@@ -3,6 +3,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Security;
+using System.Text;
 using System.Threading.Tasks;
 using broadcast.Http;
 using NUnit.Framework;
@@ -277,15 +278,26 @@ namespace broadcast.Tests
         }
         
         [Test] 
-        public async Task BasicAuth()
+        public async Task FailBasicAuth()
+        {
+            var client = new HttpClient();
+            var request = new HttpRequest(HttpRequest.GET, new Uri(Endpoint + "/test/auth/basic"));
+            var response = await request.execute(new HttpClient());
+            Assert.AreEqual(HttpStatusCode.Unauthorized, response.code);
+        }
+        
+        [Test] 
+        public async Task PassBasicAuth()
         {
             var client = new HttpClient();
             var username = "admin";
             var password = "hunter2";
+            
             Http.Http.AddBasicAuth(client, username, password);
             var request = new HttpRequest(HttpRequest.GET, new Uri(Endpoint + "/test/auth/basic"));
-            var response = await request.execute(new HttpClient());
+            var response = await request.execute(client);
             Assert.IsNotEmpty(response.body);
+            Assert.AreEqual(HttpStatusCode.OK, response.code);
             Assert.AreEqual("Hello World!", response.body);
         }
         

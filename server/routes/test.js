@@ -1,3 +1,5 @@
+const basicAuth = require('basic-auth');
+
 
 module.exports = ({app}) => {
 
@@ -46,6 +48,20 @@ module.exports = ({app}) => {
 
     app.delete('/test/delete', function(req, res){
         return res.status(200).send("OK");
+    });
+
+    app.get('/test/auth/basic', function(req, res){
+
+        let credentials = basicAuth(req);
+
+        if (!credentials) {
+            return res.status(401).send("No Credential Provided");
+        }
+
+        const username = credentials.name;
+        const password = credentials.pass;
+
+        return res.status(200).send("Hello World!");
     });
 
 };
