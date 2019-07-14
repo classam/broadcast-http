@@ -330,5 +330,29 @@ namespace broadcast.Tests
         {
             // TODO
         }
+        
+        [Test] 
+        public async Task PipelineTwoAtATime()
+        {
+            // TODO
+        }
+        
+        [Test] 
+        public async Task AsyncSyntax()
+        {
+            // TODO
+        }
+        
+        [Test] 
+        public async Task DownloadFile()
+        {
+            // TODO
+        }
+        
+        [Test] 
+        public async Task UploadFile()
+        {
+            // TODO
+        }
     }
 }
