@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading;
@@ -13,6 +14,8 @@ namespace broadcast.Http
     {
         public Uri Endpoint { get; private set; }
 
+        private readonly CookieContainer _cookieContainer;
+        private readonly HttpClientHandler _httpClientHandler;
         private readonly HttpClient _httpClient;
         private readonly HttpPipeline _httpPipeline;
 
@@ -27,27 +30,31 @@ namespace broadcast.Http
         {
             Endpoint = endpoint;
 
-            _httpClient = new HttpClient();
+            _cookieContainer = new CookieContainer();
+            _httpClientHandler = new HttpClientHandler(){ CookieContainer = _cookieContainer};
+            _httpClient = new HttpClient(_httpClientHandler);
 
             _httpPipeline = new HttpPipeline(_httpClient);
             _responseDictionary = new Dictionary<Guid, Response>();
         }
 
-        public Http(Uri endpoint, Dictionary<string, string> cookies)
+        public Http(Uri endpoint, Dictionary<string, string> headers)
         {
             Endpoint = endpoint;
 
-            _httpClient = new HttpClient();
+            _cookieContainer = new CookieContainer();
+            _httpClientHandler = new HttpClientHandler(){ CookieContainer = _cookieContainer};
+            _httpClient = new HttpClient(_httpClientHandler);
 
-            foreach (var key in cookies.Keys)
+            foreach (var key in headers.Keys)
             {
-                _httpClient.DefaultRequestHeaders.Add(key, cookies[key]);
+                _httpClient.DefaultRequestHeaders.Add(key, headers[key]);
             }
 
             _httpPipeline = new HttpPipeline(_httpClient);
             _responseDictionary = new Dictionary<Guid, Response>();
         }
-
+        
         /*
          * Update, called from unity, pulls one HttpResult out of the output queue and
          * calls any event handlers we have for it.
@@ -176,6 +183,22 @@ namespace broadcast.Http
                 Update();
                 counter += updateInterval;
             }
+        }
+
+        public void AddHeader()
+        {
+            
+        }
+
+        public void AddCookie()
+        {
+            
+        }
+        
+        public void AddBasicAuth(string username, string password)
+        {
+            var byteArray = Encoding.ASCII.GetBytes(username + ":" + password);
+            _httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Basic", Convert.ToBase64String(byteArray));
         }
 
         public static void AddBasicAuth(HttpClient client, string username, string password)

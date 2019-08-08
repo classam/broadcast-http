@@ -1,6 +1,7 @@
 const express = require('express');
-const bodyParser = require('body-parser')
-const responseTime = require('response-time');                  // Response-time is middleware for loggin' response times!
+const cookieParser = require('cookie-parser');
+const bodyParser = require('body-parser');
+const responseTime = require('response-time');
 
 const testRoute = require('./routes/test');
 const pipeline = require('./pipeline');
@@ -32,6 +33,7 @@ const main = async () => {
         httpServer: httpServer,
     };
 
+    app.use(cookieParser())
 
     app.get('/', function (req, res) {
         res.send('Hello World!');

@@ -64,4 +64,21 @@ module.exports = ({app}) => {
         return res.status(200).send("Hello World!");
     });
 
+    app.get('/test/auth/cookie', function(req, res){
+
+        let auth = req.cookies['auth'];
+
+        if(!auth){
+            return res.status(401).send("No Credential Provided");
+        }
+
+        if(auth === "secret-auth-token"){
+            return res.status(200).send("Hello World!");
+        }
+        else{
+            return res.status(401).send("Invalid Auth Credential!");
+        }
+
+    })
+
 };

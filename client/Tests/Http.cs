@@ -302,9 +302,74 @@ namespace broadcast.Tests
         }
         
         [Test] 
-        public async Task TokenAuth()
+        public async Task PassBasicAuthThreaded()
         {
-            // TODO
+            var http = new Http.Http(new Uri(Endpoint));
+            
+            var username = "admin";
+            var password = "hunter2";
+            
+            http.AddBasicAuth(username, password);
+
+            var thisHappened = false;
+
+            http.Get("test/auth/basic", (response) =>
+            {
+                Assert.AreEqual(HttpStatusCode.OK, response.code);
+                Assert.AreEqual("Hello World!", response.body);
+                thisHappened = true;
+            });
+
+            http.TestWait(5000);
+            Assert.IsTrue(thisHappened);
+        }
+        
+        [Test] 
+        public async Task FailCookieAuth()
+        {
+            var client = new HttpClient();
+            
+            var request = new HttpRequest(HttpRequest.GET, new Uri(Endpoint + "/test/auth/cookie"));
+            var response = await request.execute(client);
+            Assert.IsNotEmpty(response.body);
+            Assert.AreEqual(HttpStatusCode.Unauthorized, response.code);
+            return;
+        }
+        
+        [Test] 
+        public async Task PassCookieAuth()
+        {
+            var cookieContainer = new CookieContainer();
+            var handler = new HttpClientHandler(){ CookieContainer = cookieContainer};
+            var client = new HttpClient(handler);
+            
+            cookieContainer.Add(new Uri(Endpoint), new Cookie("auth", "secret-auth-token"));
+            
+            var request = new HttpRequest(HttpRequest.GET, new Uri(Endpoint + "/test/auth/cookie"));
+            var response = await request.execute(client);
+            Assert.IsNotEmpty(response.body);
+            Assert.AreEqual(HttpStatusCode.OK, response.code);
+            return;
+        }
+        
+        [Test] 
+        public async Task PassCookieAuthThreaded()
+        {
+            var http = new Http.Http(new Uri(Endpoint));
+
+            var thisHappened = false;
+
+            http.AddCookie(new Cookie("auth", "secret-auth-token"));
+
+            http.Get("test/auth/cookie", (response) =>
+            {
+                Assert.AreEqual(HttpStatusCode.OK, response.code);
+                Assert.AreEqual("Hello World!", response.body);
+                thisHappened = true;
+            });
+
+            http.TestWait(5000);
+            Assert.IsTrue(thisHappened);
         }
         
         [Test] 
