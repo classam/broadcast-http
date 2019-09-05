@@ -62,7 +62,7 @@ namespace broadcast.Http
          */
         public void Update()
         {
-            Console.WriteLine("PIPELINE IS EMPTY " + _httpPipeline.IsEmpty() );
+            //Console.WriteLine("PIPELINE IS EMPTY " + _httpPipeline.IsEmpty() );
             
             var response = _httpPipeline.Out();
             if (response != null)
@@ -190,9 +190,9 @@ namespace broadcast.Http
             
         }
 
-        public void AddCookie()
+        public void AddCookie(Cookie cookie)
         {
-            
+            _cookieContainer.Add(new Uri(this.Endpoint.ToString()), cookie);
         }
         
         public void AddBasicAuth(string username, string password)
