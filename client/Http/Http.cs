@@ -185,9 +185,9 @@ namespace broadcast.Http
             }
         }
 
-        public void AddHeader()
+        public void AddHeader(string key, string value)
         {
-            
+            _httpClient.DefaultRequestHeaders.Add(key, value);
         }
 
         public void AddCookie(Cookie cookie)
